@@ -13,7 +13,7 @@ class SimpleHanoi:
     runtime := Duration.of:
       move 16 --from 1 --to 2 --pile 3
     return runtime.in-ms / 1000.0
- 
+
   move number-disks /int --from source /int --to dest/int --pile temp /int:
     if number-disks == 1: return
     move number-disks - 1 --from source --to temp --pile dest
@@ -41,25 +41,25 @@ class SpeedTester:
 
     runtime := Duration.of:
       ITER_100K.repeat :
-        a := List 10 0
-        b := List 10 0 
-        c := List 10 0 
-        d := List 10 0 
-        e := List 10 0 
-        f := List 10 0 
-        g := List 10 0 
-        h := List 10 0 
-        i := List 10 0 
-        j := List 10 0 
+        a := List 10 --initial=0
+        b := List 10 --initial=0
+        c := List 10 --initial=0
+        d := List 10 --initial=0
+        e := List 10 --initial=0
+        f := List 10 --initial=0
+        g := List 10 --initial=0
+        h := List 10 --initial=0
+        i := List 10 --initial=0
+        j := List 10 --initial=0
     return runtime.in-ms / 1000.0
 
   array-write-speed-test:
     junk := SimpleHanoi
     array := List 10
     runtime := Duration.of:
-      ITER_1000K.repeat :
-        array.do:
-          it = junk
+      ITER_1000K.repeat:
+        array.size.repeat:
+          array[it] = junk
     return runtime.in-ms / 1000.0
 
   dictionary-write-speed-test:
@@ -85,6 +85,14 @@ class SpeedTester:
           e = (e * a + b) * c + d
     return runtime.in-ms / 1000.0
 
+  float-math-speed-test-inlined:
+    e := 5.0
+    runtime := Duration.of:
+      ITER_300K.repeat :
+        10.repeat:
+          e = (e * 87.0 + 53.0) * -87.0 + 42461.0
+    return runtime.in-ms / 1000.0
+
   integer-math-speed-test:
     a := 87
     b := 53
@@ -100,35 +108,35 @@ class SpeedTester:
 
   ordered-collection-iterate-speed-test:
     junk := SimpleHanoi
-    oc := List 20 junk
+    oc := List 20 --initial=junk
     runtime := Duration.of:
       ITER_100K.repeat :
         10.repeat:
-          oc.do : it
+          oc.do: it
     return runtime.in-ms / 1000.0
 
   ordered-collection-iterate-unrolled-speed-test:
     junk := SimpleHanoi
-    oc := List 20 junk
+    oc := List 20 --initial=junk
     runtime := Duration.of:
       ITER_100K.repeat :
-        oc.do : it
-        oc.do : it
-        oc.do : it
-        oc.do : it
-        oc.do : it
-        oc.do : it
-        oc.do : it
-        oc.do : it
-        oc.do : it
-        oc.do : it
+        oc.do: it
+        oc.do: it
+        oc.do: it
+        oc.do: it
+        oc.do: it
+        oc.do: it
+        oc.do: it
+        oc.do: it
+        oc.do: it
+        oc.do: it
     return runtime.in-ms / 1000.0
 
   ordered-collection-write-speed-test:
     junk := SimpleHanoi
     runtime := Duration.of:
       ITER_100K.repeat :
-        oc := List
+        oc := []
         10.repeat:
           oc.add junk
     return runtime.in-ms / 1000.0
@@ -138,7 +146,7 @@ class SpeedTester:
     junk := SimpleHanoi
     runtime := Duration.of:
       ITER_100K.repeat :
-        oc := List 20
+        oc := []
         oc.add junk
         oc.add junk
         oc.add junk
@@ -155,7 +163,7 @@ class SpeedTester:
     junk := SimpleHanoi
     runtime := Duration.of:
       ITER_100K.repeat :
-        oc := List
+        oc := []
         10.repeat:
           oc.add junk
     return runtime.in-ms / 1000.0
@@ -189,7 +197,7 @@ main:
   results := List 9
   for i := 0; i < 9; i++:
     results[i] = (one[i] + two[i] + three[i]) / 3.0
-  
+
   print "STIC benchmark for Toit $system.app-sdk-version ---------------------------"
   print "   (smaller numbers are better)"
   print "alloc               $(%.2f results[0])"
