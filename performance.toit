@@ -1,11 +1,17 @@
-// Copyright (c) 2023, Ekorau LLC
+// Copyright (c) 2023, 2025 Ekorau LLC
 
+import system
+
+ITER_10K := 10000
+ITER_100K := 100000
+ITER_300K := 300000
+ITER_1000K := 1000000
 
 class SimpleHanoi:
 
   hanoi:
     runtime := Duration.of:
-      move 22 --from 1 --to 2 --pile 3
+      move 16 --from 1 --to 2 --pile 3
     return runtime.in-ms / 1000.0
  
   move number-disks /int --from source /int --to dest/int --pile temp /int:
@@ -32,63 +38,39 @@ class SpeedTester:
     return results
 
   alloc-speed-test:
+
     runtime := Duration.of:
-      100000.repeat :
-        a := List 10
-        b := List 10
-        c := List 10
-        d := List 10
-        e := List 10
-        f := List 10
-        g := List 10
-        h := List 10
-        i := List 10
-        j := List 10
+      ITER_100K.repeat :
+        a := List 10 0
+        b := List 10 0 
+        c := List 10 0 
+        d := List 10 0 
+        e := List 10 0 
+        f := List 10 0 
+        g := List 10 0 
+        h := List 10 0 
+        i := List 10 0 
+        j := List 10 0 
     return runtime.in-ms / 1000.0
 
   array-write-speed-test:
     junk := SimpleHanoi
     array := List 10
     runtime := Duration.of:
-      1000000.repeat :
-        array[0] = junk
-        array[1] = junk
-        array[2] = junk
-        array[3] = junk
-        array[4] = junk
-        array[5] = junk
-        array[6] = junk
-        array[7] = junk
-        array[8] = junk
-        array[9] = junk
+      ITER_1000K.repeat :
+        array.do:
+          it = junk
     return runtime.in-ms / 1000.0
 
   dictionary-write-speed-test:
     junk := SimpleHanoi
-    key0 := "a"
-    key1 := "b"
-    key2 := "c"
-    key3 := "d"
-    key4 := "e"
-    key5 := "f"
-    key6 := "g"
-    key7 := "h"
-    key8 := "i"
-    key9 := "j"
+    keys := ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
 
     runtime := Duration.of:
-      10000.repeat :
+      ITER_10K.repeat :
         dict := {:}
-        dict[key0] = junk
-        dict[key1] = junk
-        dict[key2] = junk
-        dict[key3] = junk
-        dict[key4] = junk
-        dict[key5] = junk
-        dict[key6] = junk
-        dict[key7] = junk
-        dict[key8] = junk
-        dict[key9] = junk
+        keys.do:
+          dict[it] = junk
     return runtime.in-ms / 1000.0
 
   float-math-speed-test:
@@ -98,17 +80,9 @@ class SpeedTester:
     d := 42461.0
     e := 5.0
     runtime := Duration.of:
-      300000.repeat :
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
+      ITER_300K.repeat :
+        10.repeat:
+          e = (e * a + b) * c + d
     return runtime.in-ms / 1000.0
 
   integer-math-speed-test:
@@ -118,24 +92,26 @@ class SpeedTester:
     d := 42461
     e := 5
     runtime := Duration.of:
-      300000.repeat :
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
-        e = (e * a + b) * c + d
+      ITER_300K.repeat :
+        10.repeat:
+          e = (e * a + b) * c + d
     return runtime.in-ms / 1000.0
+
 
   ordered-collection-iterate-speed-test:
     junk := SimpleHanoi
     oc := List 20 junk
     runtime := Duration.of:
-      100000.repeat :
+      ITER_100K.repeat :
+        10.repeat:
+          oc.do : it
+    return runtime.in-ms / 1000.0
+
+  ordered-collection-iterate-unrolled-speed-test:
+    junk := SimpleHanoi
+    oc := List 20 junk
+    runtime := Duration.of:
+      ITER_100K.repeat :
         oc.do : it
         oc.do : it
         oc.do : it
@@ -151,7 +127,17 @@ class SpeedTester:
   ordered-collection-write-speed-test:
     junk := SimpleHanoi
     runtime := Duration.of:
-      100000.repeat :
+      ITER_100K.repeat :
+        oc := List
+        10.repeat:
+          oc.add junk
+    return runtime.in-ms / 1000.0
+
+
+  ordered-collection-unrolled-write-speed-test:
+    junk := SimpleHanoi
+    runtime := Duration.of:
+      ITER_100K.repeat :
         oc := List 20
         oc.add junk
         oc.add junk
@@ -165,33 +151,37 @@ class SpeedTester:
         oc.add junk
     return runtime.in-ms / 1000.0
 
+  ordered-collection-open-write-speed-test:
+    junk := SimpleHanoi
+    runtime := Duration.of:
+      ITER_100K.repeat :
+        oc := List
+        10.repeat:
+          oc.add junk
+    return runtime.in-ms / 1000.0
+
   string-compare-speed-test:
+    s1 := "this is a test of a string compare of two long strings"
+    s2 := "this is a test of a string compare of two long strings"
     runtime := Duration.of :
-      100000.repeat :
-        "this is a test of a string compare of two long strings" == "this is a test of a string compare of two long strings"
-        "this is a test of a string compare of two long strings" == "this is a test of a string compare of two long strings"
-        "this is a test of a string compare of two long strings" == "this is a test of a string compare of two long strings"
-        "this is a test of a string compare of two long strings" == "this is a test of a string compare of two long strings"
-        "this is a test of a string compare of two long strings" == "this is a test of a string compare of two long strings"
-        "this is a test of a string compare of two long strings" == "this is a test of a string compare of two long strings"
-        "this is a test of a string compare of two long strings" == "this is a test of a string compare of two long strings"
-        "this is a test of a string compare of two long strings" == "this is a test of a string compare of two long strings"
-        "this is a test of a string compare of two long strings" == "this is a test of a string compare of two long strings"
-        "this is a test of a string compare of two long strings" == "this is a test of a string compare of two long strings"
+      ITER_100K.repeat :
+        10.repeat:
+          s1 == s2
     return runtime.in-ms / 1000.0
 
 
 main:
 
-  stats := process-stats --gc
+  print "Starting STIC benchmark..."
+  stats := system.process-stats --gc
   print "Full GC count $stats[9]"
   tester := SpeedTester
   one := tester.run
-  stats = process-stats --gc
+  stats = system.process-stats --gc
   print "Full GC count $stats[9]"
   tester = SpeedTester
   two := tester.run
-  stats = process-stats --gc
+  stats = system.process-stats --gc
   print "Full GC count $stats[9]"
   tester = SpeedTester
   three := tester.run
@@ -200,7 +190,7 @@ main:
   for i := 0; i < 9; i++:
     results[i] = (one[i] + two[i] + three[i]) / 3.0
   
-  print "STIC benchmark ---------------------------"
+  print "STIC benchmark for Toit $system.app-sdk-version ---------------------------"
   print "   (smaller numbers are better)"
   print "alloc               $(%.2f results[0])"
   print "array write         $(%.2f results[1])"
