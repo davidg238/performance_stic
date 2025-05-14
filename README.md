@@ -4,10 +4,10 @@ A translation to Toit, of a Smalltalk benchmark written by the Smalltalk Industr
 It is only published for comparison to the original Smalltalk benchmark and to enable results to be reproduced.  
 See also the [original post](https://ekorau.com/some-numbers/).
 
-### Update 2025-05-15
+### Update 2025-05-13
 
 The code has been updated a little since the original post, to remove some potential optimizations (remove some un-rolled loops).
-A trivial comparison of several language implmentations on an embedded target.
+A trivial comparison of several language implementations on an embedded target.
 
 STIC benchmark
 
