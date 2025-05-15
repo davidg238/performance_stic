@@ -11,7 +11,7 @@ class SimpleHanoi:
 
   hanoi:
     runtime := Duration.of:
-      move 16 --from 1 --to 2 --pile 3
+      move 8 --from 1 --to 2 --pile 3
     return runtime.in-ms / 1000.0
 
   move number-disks /int --from source /int --to dest/int --pile temp /int:
@@ -200,13 +200,13 @@ main:
 
   print "STIC benchmark for Toit $system.app-sdk-version ---------------------------"
   print "   (smaller numbers are better)"
-  print "alloc               $(%.2f results[0])"
-  print "array write         $(%.2f results[1])"
-  print "dictionary write    $(%.2f results[2])"
-  print "float math          $(%.2f results[3])"
-  print "integer math        $(%.2f results[4])"
-  print "collection iterate  $(%.2f results[5])"
-  print "collection write    $(%.2f results[6])"
-  print "string compare      $(%.2f results[7])"
-  print "hanoi               $(%.2f results[8])"
+  print "alloc               $(%.1f results[0])"
+  print "array write         $(%.1f results[1])"
+  print "dictionary write    $(%.1f results[2])"
+  print "float math          $(%.1f results[3])"
+  print "integer math        $(%.1f results[4])"
+  print "collection iterate  $(%.1f results[5])"
+  print "collection write    $(%.1f results[6])"
+  print "string compare      $(%.1f results[7])"
+  print "hanoi               $(%.1f results[8])"
   print "-------------------------------------------"
