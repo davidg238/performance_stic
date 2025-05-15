@@ -12,7 +12,7 @@ A comparison of several language implementations on an embedded target.
 STIC benchmark
 
 | Test | Toit | uLisp  | CircuitPython |
-| :-- | --: | --: | --: |
+| --: | --: | --: | --: |
 | alloc | 16.0 | 21.6 | 11.4 |
 | array write | 19.4 | 98.1 | 63.3 |
 | dictionary write | 5.7 | 1.4 | 0.9 |
@@ -41,7 +41,7 @@ Notes:
 On an i3-12100 desktop machine, using Zig v0.14.0
 
 | Test                 | Toit   | Zig     |
-| :------------------- | -----: | ------: |
+| -------------------: | -----: | ------: |
 | alloc                | 0.0473 | 2.7775  |
 | array write          | 0.1373 | 0.0155  |
 | dictionary write     | 0.0217 | 0.0250  |
@@ -50,7 +50,8 @@ On an i3-12100 desktop machine, using Zig v0.14.0
 | collection iterate   | 0.1407 | 0.0310  |
 | collection write     | 0.0440 | 0.0017  |
 | string compare       | 0.0100 | 0.0130  |
-| hanoi @ blocks: 16   | 0.0010 | 0.0003  |
+| hanoi @ blocks: 8   |  0.00000000 | 0.00000147  |
+| 16                   | 0.0010     | 0.0003 |
 | 20                   | ut     | ut |
 | 21                   | ut     | ut |
 | 22                   | ut     | ut |
