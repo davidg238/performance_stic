@@ -95,7 +95,7 @@ Reproduced from the [original results](https://ekorau.com/some_numbers/Performan
 | collectionIterate | 21.8 | 5.9 | 42.1 | 42.2 | 34.7 | 24.5 | 4.0 | 3.2 | 61.6 |
 | collectionWrite | 3.5 | 1.0 | 6.3 | 6.4 | 5.4 | 4.0 | 2.0 | 2.9 | 4.1 |
 | stringCompare | 2.3 | 0.9 | 301.2 | 241.4 | 215.7 | 0.6 | 1.2 | 3.6 | 0.9 |
-| hanoi | 4.7 | 0.9 | 12.6 | 12.9 | 7.9 | 8.2 | 1.8 | 1.0 | 4.0 |
+| hanoi @ blocks: 22 | 4.7 | 0.9 | 12.6 | 12.9 | 7.9 | 8.2 | 1.8 | 1.0 | 4.0 |
 
 Notes:
 
