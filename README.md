@@ -44,7 +44,30 @@ ESP-IDF/FreeRTOS; 96 KB VM heap. Port: `performance.nsl` (nsl), semantics and co
 `performance.toit`. Measurement provenance and caveats:
 `~/workspace/tuvm/zephyr/docs/results.md` (E4; VM-side trial branches exist
 that halve collection iterate — E6 — but are unmerged and not quoted here).
-    
+
+## tuvm native-AOT — the OEOM lever (2026-07-17)
+
+The `tuvm/nsl` Hanoi rows above are the **interpreter**. Because tuvm's object model
+(OEOM) makes every call a `send` and every method just a `Binding → Closure`, "native vs
+interpreted" is **one field** on the closure — so a hot method can be replaced by
+hand-written C *dropped straight into the vtable*, with **callers, interpreter, and
+`.oimg` image format all unchanged** (no JIT, no recompile, no format break). Same board,
+same binary, A/B:
+
+| Hanoi n | interpreted (`tuvm/nsl`) | native-in-vtable | speedup |
+| --: | --: | --: | --: |
+| 16 | 0.7 s   | 0.0067 s | **~116×** |
+| 20 | 12.0 s  | 0.103 s  | **~119×** |
+
+~11.75 µs/move → ~0.10 µs/move; native is linear and allocation-free (no GC). This is the
+*fully-inlined* AOT **ceiling** (the recursion collapses to raw C), so it sits ~10× past
+Toit's compiled column on this workload — a real bytecode→native compiler preserving
+send/GC semantics would land between the interpreter and this bound. The point is the
+**lever, not the number**: OEOM's single dispatch choke point lets you ship the
+interpreter, learn from months of fleet usage which one selector is actually hot, then
+push a surgical bespoke-AOT patch for exactly that method. Method + caveats:
+`~/workspace/tuvm/docs/design/2026-07-17-oeom-native-substitution-hanoi-spike-design.md`.
+
 ## Program-shaped benchmarks: Richards and DeltaBlue
 
 The STIC rows above are single-mechanism spin loops. Richards (the classic
@@ -111,15 +134,9 @@ watchdog is armed in this build (`CONFIG_WATCHDOG`/`CONFIG_TASK_WDT` unset), so 
 3-minute n=24 compute runs uninterrupted. Toit/other-VM columns for the larger n
 are tbr.
 
-**Native-AOT ceiling (same board, 2026-07-17).** Replacing the interpreted `hanoiMove:`
-with a native C `PrimitiveClosure` bound into the vtable — the same selector, callers
-unchanged, dispatched through tuvm's existing OEOM fork — runs the identical A/B in one
-binary: n=20 **12,316 ms bytecode vs 103 ms native (~119×)**, n=16 ~116×; native
-~100 ns/move, linear/GC-free. This is the *fully-inlined* AOT ceiling (recursion
-collapsed to raw C), so it sits ~10× past Toit's compiled engine on this workload — a
-bespoke bytecode→native compiler preserving send/GC semantics would land between the
-11.43 µs/move interpreter and this ~0.1 µs/move bound. Method + caveats:
-`~/workspace/tuvm/docs/design/2026-07-17-oeom-native-substitution-hanoi-spike-design.md`.
+**Native-AOT ceiling:** replacing this interpreted `hanoiMove:` with a native C method
+dropped into the vtable runs the same n=20 at **103 ms vs 12,316 ms (~119×)** — see the
+*tuvm native-AOT — the OEOM lever* section above for the A/B table and the mechanism.
 
 On an i3-12100 desktop machine, using Zig v0.14.0
 
