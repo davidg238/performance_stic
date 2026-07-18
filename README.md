@@ -4,7 +4,7 @@ A translation to Toit, of a Smalltalk benchmark written by the Smalltalk Industr
 It is only published for comparison to the original Smalltalk benchmark and to enable results to be reproduced.  
 See also the [original post](https://ekorau.com/some-numbers/).
 
-## Platform: ESP32, 240 MHz, 520 KB RAM, 4 MB Flash
+## Platform: Espressif ESP32, 240 MHz, 520 KB RAM, 4 MB Flash
 
 STIC benchmark
 
@@ -27,12 +27,12 @@ STIC benchmark
 
 Notes:  
 
-1. Smaller numbers are better
-2. ut: un-tested,  se: stack exhausted
-3. nsl-tuvm is experimental software, running on Zephyr 4.2.0, with 96 KB VM heap
-4. Software: Toit v2.0.0-alpha.180, uLisp v4.7, Adafruit CircuitPython 9.2.7
+- Smaller numbers are better
+- ut: un-tested,  se: stack exhausted
+- Software: Toit v2.0.0-alpha.180, uLisp v4.7, Adafruit CircuitPython 9.2.7
+- nsl-tuvm is experimental software, running on Zephyr 4.2.0, with 96 KB VM heap
 
-## tuvm native-AOT — the OEOM lever (2026-07-17)
+### tuvm native-AOT — the OEOM lever
 
 The `tuvm/nsl` Hanoi rows above are the **interpreter**. Because tuvm's object model
 (OEOM) makes every call a `send` and every method just a `Binding → Closure`, "native vs
@@ -55,7 +55,7 @@ interpreter, learn from months of fleet usage which one selector is actually hot
 push a surgical bespoke-AOT patch for exactly that method. Method + caveats:
 `~/workspace/tuvm/docs/design/2026-07-17-oeom-native-substitution-hanoi-spike-design.md`.
 
-## Platform: i3-12100 linux desktop machine
+## Platform: Intel i3-12100, 3.3GHz, 16GB RAM, Ubuntu 24.04
 
 | Test                 | Toit   | Zig     |
 | -------------------: | -----: | ------: |
@@ -78,7 +78,7 @@ Notes:
 
 1. Zig v0.14.0
 
-## Platform: 166MMX Pentium with 40MB RAM, under Windows/95 OSR2.
+## Platform: 166MMX Pentium, 40MB RAM, Windows/95 OSR2
 
 Reproduced from the [original results](https://ekorau.com/some_numbers/Performance.html).
 
