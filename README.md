@@ -54,8 +54,8 @@ same binary, A/B:
 Toit's compiled column on this workload — a real bytecode→native compiler preserving
 send/GC semantics would land between the interpreter and this bound. The point is the
 **lever, not the number**: OEOM's single dispatch choke point lets you ship the
-interpreter, learn from months of fleet usage which one selector is actually hot, then
-push a surgical bespoke-AOT patch for exactly that method. Method + caveats:
+interpreter, profile real workloads to find the genuinely hot methods, then push a
+surgical bespoke-AOT patch for just those. Method + caveats:
 `~/workspace/tuvm/docs/design/2026-07-17-oeom-native-substitution-hanoi-spike-design.md`.
 
 ## Platform: Intel i3-12100, 3.3GHz, 16GB RAM, Ubuntu 24.04
