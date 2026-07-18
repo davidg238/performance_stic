@@ -27,10 +27,13 @@ STIC benchmark
 
 Notes:  
 
-- Smaller numbers are better
-- ut: un-tested,  se: stack exhausted
-- Software: Toit v2.0.0-alpha.180, uLisp v4.7, Adafruit CircuitPython 9.2.7
-- nsl-tuvm is experimental software, running on Zephyr 4.2.0, with 96 KB VM heap
+1. Smaller numbers are better
+2. ut: un-tested,  se: stack exhausted
+3. Software:
+   - Toit v2.0.0-alpha.180
+   - uLisp v4.7
+   - Adafruit CircuitPython 9.2.7
+   - nsl-tuvm is experimental software, running on Zephyr 4.2.0, with 96 KB VM heap
 
 ### tuvm native-AOT — the OEOM lever
 
