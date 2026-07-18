@@ -111,6 +111,16 @@ watchdog is armed in this build (`CONFIG_WATCHDOG`/`CONFIG_TASK_WDT` unset), so 
 3-minute n=24 compute runs uninterrupted. Toit/other-VM columns for the larger n
 are tbr.
 
+**Native-AOT ceiling (same board, 2026-07-17).** Replacing the interpreted `hanoiMove:`
+with a native C `PrimitiveClosure` bound into the vtable — the same selector, callers
+unchanged, dispatched through tuvm's existing OEOM fork — runs the identical A/B in one
+binary: n=20 **12,316 ms bytecode vs 103 ms native (~119×)**, n=16 ~116×; native
+~100 ns/move, linear/GC-free. This is the *fully-inlined* AOT ceiling (recursion
+collapsed to raw C), so it sits ~10× past Toit's compiled engine on this workload — a
+bespoke bytecode→native compiler preserving send/GC semantics would land between the
+11.43 µs/move interpreter and this ~0.1 µs/move bound. Method + caveats:
+`~/workspace/tuvm/docs/design/2026-07-17-oeom-native-substitution-hanoi-spike-design.md`.
+
 On an i3-12100 desktop machine, using Zig v0.14.0
 
 | Test                 | Toit   | Zig     |
