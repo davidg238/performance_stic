@@ -4,14 +4,11 @@ A translation to Toit, of a Smalltalk benchmark written by the Smalltalk Industr
 It is only published for comparison to the original Smalltalk benchmark and to enable results to be reproduced.  
 See also the [original post](https://ekorau.com/some-numbers/).
 
-### Update 2026-07-17
-
-The Toit code has had minor updates since the original post.  
-A comparison of several language implementations on an embedded target.
+## Platform: ESP32, 240 MHz, 520 KB RAM, 4 MB Flash
 
 STIC benchmark
 
-| Test | Toit | uLisp  | CircuitPython | tuvm/nsl † |
+| Test | Toit | uLisp  | CircuitPython | tuvm/nsl |
 | --: | --: | --: | --: | --: |
 | alloc | 16.0 | 21.6 | 11.4 | 24.1 |
 | array write | 19.4 | 98.1 | 63.3 | 138.9 |
@@ -30,20 +27,10 @@ STIC benchmark
 
 Notes:  
 
-1) ut: un-tested,  se: stack exhausted
-2) Hardware:
-   - Espressif ESP32 DevKitc V4 WROOM-32E  
-3) Software:  
-    - Toit v2.0.0-alpha.180
-    - uLisp v4.7
-    - Adafruit CircuitPython 9.2.7
-
-† tuvm/nsl column (2026-07-16, preliminary — not yet a peer of the other
-columns): a **single run**, not a mean of 3; on **Zephyr 4.2.0**, not
-ESP-IDF/FreeRTOS; 96 KB VM heap. Port: `performance.nsl` (nsl), semantics and counts from
-`performance.toit`. Measurement provenance and caveats:
-`~/workspace/tuvm/zephyr/docs/results.md` (E4; VM-side trial branches exist
-that halve collection iterate — E6 — but are unmerged and not quoted here).
+1. Smaller numbers are better
+2. ut: un-tested,  se: stack exhausted
+3. nsl-tuvm is experimental software, running on Zephyr 4.2.0, with 96 KB VM heap
+4. Software: Toit v2.0.0-alpha.180, uLisp v4.7, Adafruit CircuitPython 9.2.7
 
 ## tuvm native-AOT — the OEOM lever (2026-07-17)
 
@@ -68,77 +55,7 @@ interpreter, learn from months of fleet usage which one selector is actually hot
 push a surgical bespoke-AOT patch for exactly that method. Method + caveats:
 `~/workspace/tuvm/docs/design/2026-07-17-oeom-native-substitution-hanoi-spike-design.md`.
 
-## Program-shaped benchmarks: Richards and DeltaBlue
-
-The STIC rows above are single-mechanism spin loops. Richards (the classic
-OS-task-dispatcher simulation, Martin Richards / V8 lineage) and DeltaBlue
-(the incremental constraint solver, Freeman-Benson & Maloney) are the
-complementary *program-shaped* pair: polymorphic dispatch, linked structures,
-branchy control flow, no single hot loop — and both **self-verify** (Richards
-by its canonical scheduling counts 23246/9297; DeltaBlue by checking every
-plan execution).
-
-Files, one per language, all printing the same format
-(`richards: <ms>` / `deltablue: <ms>` per run, 3 runs, then
-`verified: <bool>`):
-
-- `richards.toit`, `deltablue.toit` — adapted from the Toit repo's ports
-  (classes verbatim; timed harness added).
-- `richards.py`, `deltablue.py` — direct translations of the same, for
-  CircuitPython (also run on CPython).
-- nsl: `richards.nsl` and `deltablue.nsl`
-  (SOM-lineage bodies, same timed harness; copies of nsl-tests/00_perf).
-
-Workload definitions: Richards = one canonical run (idle count 10000).
-DeltaBlue = `chain_test(50)` + `projection_test(50)`, SOM shape (50
-variables / 49 equality constraints, 50 verified plan executions; the
-Toit/Python chain tests were matched to this shape so all columns do
-identical work). n=50 rather than the canonical 100 because n=100's live
-constraint graph overruns the tuvm column's 96 KB device heap.
-
-| Benchmark (seconds/run) | Toit | CircuitPython | tuvm/nsl † |
-| --: | --: | --: | --: |
-| richards | 1.318 | tbr | 16.07 |
-| deltablue | 0.093 | tbr | 1.16 |
-
-tbr: to be run (CircuitPython column pending). The Toit figures are means of 3
-runs on the jag/Jaguar node (`richards.toit` 1.318/1.317/1.319 s; `deltablue.toit`
-0.097/0.093/0.089 s), self-verified, 2026-07-17. The tuvm/nsl figures are means
-of 3 same-binary runs (richards 15.957/16.117/16.145 s at 96 KB VM heap — merged
-perf defaults: IRAM hot-set + debug-hooks-off + fast-path opcodes, −8.8% vs the
-pre-merge 17.6 s; deltablue 1.160/1.164/1.159 s at 112 KB — DeltaBlue's
-constraint graph needs the larger arena, see tuvm's results ledger). The Toit and tuvm/nsl nodes run on two
-identical **Espressif ESP32-DevKitC V4 (WROOM-32E)** boards sitting side by side
-— same devkit, same silicon — so the ~12× gap is pure VM (Toit's compiled engine
-vs tuvm's bytecode interpreter), not hardware. Same software caveats as the †
-footnote above.
-
-### Hanoi scaling (tuvm/nsl, ESP32)
-
-The STIC `hanoi @ blocks: 8` row above is a single tiny point. Towers of Hanoi is
-a pure-recursion call-throughput probe (moves = 2ⁿ−1; recursion *depth* is only n,
-so no VM-stack pressure), which makes it a clean way to check the interpreter's
-per-send cost at scale. Measured on the same ESP32-DevKitC V4 (WROOM-32E), Model B
-(.oimg), single binary:
-
-| n | time | moves (2ⁿ−1) | µs/move |
-| --: | --: | --: | --: |
-| 8  | 3 ms          | 255        | ~12   |
-| 16 | 749 ms        | 65,535     | 11.43 |
-| 20 | 11,984 ms     | 1,048,575  | 11.43 |
-| 24 | 191,735 ms (3 min 12 s) | 16,777,215 | 11.43 |
-
-Per-move cost is **constant at 11.43 µs/move** across five orders of magnitude of
-work — perfectly linear, no GC cliff (n=24 is exactly 8× n=21's 23,967 ms). No
-watchdog is armed in this build (`CONFIG_WATCHDOG`/`CONFIG_TASK_WDT` unset), so the
-3-minute n=24 compute runs uninterrupted. Toit/other-VM columns for the larger n
-are tbr.
-
-**Native-AOT ceiling:** replacing this interpreted `hanoiMove:` with a native C method
-dropped into the vtable runs the same n=20 at **103 ms vs 12,316 ms (~119×)** — see the
-*tuvm native-AOT — the OEOM lever* section above for the A/B table and the mechanism.
-
-On an i3-12100 desktop machine, using Zig v0.14.0
+## Platform: i3-12100 linux desktop machine
 
 | Test                 | Toit   | Zig     |
 | -------------------: | -----: | ------: |
@@ -157,4 +74,28 @@ On an i3-12100 desktop machine, using Zig v0.14.0
 | 22                   | ut     | ut |
 | 24                   | 0.3933 | 0.0671  |
 
- 
+Notes:
+
+1. Zig v0.14.0
+
+## Platform: 166MMX Pentium with 40MB RAM, under Windows/95 OSR2.
+
+Reproduced from the [original results](https://ekorau.com/some_numbers/Performance.html).
+
+| Test | Smalltalk Express 2.0.4 | Visual Smalltalk 3.0.1 | Squeak 1.20 | Squeak 1.30 | Squeak 1.30J | Dolphin/98 rel1 | VAST 4.02 | Smalltalk MT 1.5b3 | Java 1.2b2 |
+| --: | --: | --: | --: | --: | --: | --: | --: | --: | --: |
+| alloc | 3.9 | 1.1 | 3.0 | 3.1 | 3.9 | 1.9 | 2.5 | 15.7 | 846.8 |
+| arrayWrite | 8.4 | 2.4 | 11.9 | 11.8 | 9.9 | 9.1 | 4.7 | 1.7 | 0.5 |
+| dictionaryWrite | 5.9 | 0.5 | 3.6 | 3.8 | 3.4 | 1.6 | 0.5 | 1.0 | 6.7 |
+| floatMath | 20.7 | 7.1 | 19.3 | 20.5 | 24.5 | 14.1 | 17.8 | 66.8 | 2.6 |
+| integerMath | 20.5 | 0.9 | 7.1 | 7.0 | 5.9 | 2.3 | 1.8 | 1.0 | 3.2 |
+| collectionIterate | 21.8 | 5.9 | 42.1 | 42.2 | 34.7 | 24.5 | 4.0 | 3.2 | 61.6 |
+| collectionWrite | 3.5 | 1.0 | 6.3 | 6.4 | 5.4 | 4.0 | 2.0 | 2.9 | 4.1 |
+| stringCompare | 2.3 | 0.9 | 301.2 | 241.4 | 215.7 | 0.6 | 1.2 | 3.6 | 0.9 |
+| hanoi | 4.7 | 0.9 | 12.6 | 12.9 | 7.9 | 8.2 | 1.8 | 1.0 | 4.0 |
+
+Notes:
+
+1. Each test was run three times.
+2. The Java alloc value (846.8) was extrapolated from 1000 iterations, rather than the 100,000 used in other images.
+3. ObjectConnect provided commentary regarding Smalltalk/MT performance metrics.
