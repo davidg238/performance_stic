@@ -37,7 +37,7 @@
 // Adapted for the stic cross-VM benchmark family from
 // toit/tests/type_propagation/richards-test.toit (the Toit port of the V8
 // Richards benchmark): classes are verbatim; this file adds the timed
-// 3-run harness. Output format matches the nsl/tuvm richards.ns node:
+// 3-run harness. Output format matches the nsl/tuvm richards.nsl node:
 // "richards: <ms>" per run, then "verified: <bool>" and "done".
 // The nsl column runs the SOM-lineage port of the same benchmark; the two
 // schedule identical work, verified by the canonical counts (23246 / 9297).

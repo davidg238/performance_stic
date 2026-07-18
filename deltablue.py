@@ -13,7 +13,7 @@
 # chain_test uses the SOM-lineage shape the nsl/tuvm column runs
 # (n variables, n-1 equality constraints, n verified plan executions) so
 # all columns do identical work.  Output format matches the nsl
-# deltablue.ns node: "deltablue: <ms>" per run of
+# deltablue.nsl node: "deltablue: <ms>" per run of
 # (chain_test(50) + projection_test(50)), then "verified: <bool>" and
 # "done".  The workload self-verifies: any wrong plan raises.
 

@@ -10,7 +10,7 @@
 #
 # Authored for the stic cross-VM benchmark family as a direct translation
 # of richards.toit (this directory); runs on CPython and CircuitPython.
-# Output format matches the nsl/tuvm richards.ns node: "richards: <ms>" per
+# Output format matches the nsl/tuvm richards.nsl node: "richards: <ms>" per
 # run, then "verified: <bool>" and "done".  The nsl column runs the
 # SOM-lineage port of the same benchmark; the two schedule identical work,
 # verified by the canonical counts (23246 / 9297).

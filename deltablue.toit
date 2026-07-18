@@ -41,7 +41,7 @@ I've kept it this way to avoid deviating too much from the original implementati
 // chain-test is adjusted to the SOM-lineage shape the nsl/tuvm column runs
 // (n variables, n-1 equality constraints, n verified plan executions, edit
 // destroyed at the end) so all columns do identical work; projection-test
-// was already identical. Output format matches the nsl deltablue.ns node:
+// was already identical. Output format matches the nsl deltablue.nsl node:
 // "deltablue: <ms>" per run of (chain-test 50 + projection-test 50),
 // then "verified: <bool>" and "done".  The workload self-verifies: any
 // wrong plan throws.
