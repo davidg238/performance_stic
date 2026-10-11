@@ -8,22 +8,22 @@ See also the [original post](https://ekorau.com/some-numbers/).
 
 STIC benchmark
 
-| Test | Toit | uLisp  | CircuitPython | tuvm/nsl |
-| --: | --: | --: | --: | --: |
-| alloc | 16.0 | 21.6 | 11.4 | 24.1 |
-| array write | 19.4 | 98.1 | 63.3 | 138.9 |
-| dictionary write | 5.7 | 1.4 | 0.9 | 43.3 |
-| float math | 41.1 | 124.3 | 20.9 | 35.1 |
-| integer math | 9.4 | 122.5 | 14.4 | 15.3 |
-| collection iterate | 12.7 | 42.5 | 29.2 | 532.6 |
-| collection write | 9.5 | 6.7 | 15.4 | 97.0 |
-| string compare | 1.5 | 12.5 | 2.9 | 5.2 |
-| hanoi @ blocks:  8 | 0.0000 | 0.01 | 0.01 | 0.003 |
-| 16 | 0.2 | 3.2 | 1.4 | 0.7 |
-|   20 | 3.0 | 54.2 | 21.6 | 12.0 |
-|  21 | ut | ut | 43.1 | 24.0 |
-|  22 | ut | ut | se | ut |
-| 24 | 49.2 | 924.1 | se | 191.7 |
+| Test | Toit | uLisp  | CircuitPython | tuvm/nsl (2026-07) | rete/nsl (2026-10) |
+| --: | --: | --: | --: | --: | --: |
+| alloc | 16.0 | 21.6 | 11.4 | 24.1 | 19.3 |
+| array write | 19.4 | 98.1 | 63.3 | 138.9 | 93.8 |
+| dictionary write | 5.7 | 1.4 | 0.9 | 43.3 | 25.5 |
+| float math | 41.1 | 124.3 | 20.9 | 35.1 | 44.2⁴ |
+| integer math | 9.4 | 122.5 | 14.4 | 15.3 | 5.3 |
+| collection iterate | 12.7 | 42.5 | 29.2 | 532.6 | **22.2** |
+| collection write | 9.5 | 6.7 | 15.4 | 97.0 | 50.6 |
+| string compare | 1.5 | 12.5 | 2.9 | 5.2 | 4.2 |
+| hanoi @ blocks:  8 | 0.0000 | 0.01 | 0.01 | 0.003 | 0.003 |
+| 16 | 0.2 | 3.2 | 1.4 | 0.7 | ut |
+|   20 | 3.0 | 54.2 | 21.6 | 12.0 | ut |
+|  21 | ut | ut | 43.1 | 24.0 | ut |
+|  22 | ut | ut | se | ut | ut |
+| 24 | 49.2 | 924.1 | se | 191.7 | ut |
 
 Notes:  
 
@@ -34,6 +34,13 @@ Notes:
    - uLisp v4.7
    - Adafruit CircuitPython 9.2.7
    - nsl-tuvm is experimental software, running on Zephyr 4.2.0, with 96 KB VM heap
+   - rete/nsl (2026-10) is the same VM three months on (renamed tuvm → rete), rete master `7e3c4e5`
+     (2026-10-11), Zephyr 4.2.0, Model B, 96 KB VM heap, no WiFi, on the same ESP32-D0WDQ6 rev 1.0 (WROOM-32).
+     Its collection iterate is the first to inline a literal `do:` block at the call site behind a class
+     guard (rete#37). Hanoi above 8 was not part of this run.
+4. Float math (2026-10) ran with a 2 KB boxed-float slab against July's 8 KB: October's image leaves ~3 KB of
+   libc heap where July's left ~28 KB, so July's slab no longer fits. More frequent float collection is the
+   likeliest reason the row is slower than July's; that is not measured.
 
 ### tuvm native-AOT — the OEOM lever
 
