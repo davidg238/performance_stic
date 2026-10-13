@@ -135,25 +135,25 @@ Notes:
 
 | Test                 | Toit   | Zig     | rete/nsl |
 | -------------------: | -----: | ------: | -------: |
-| alloc                | 0.0473 | 2.7775  | 0.1080 |
-| array write          | 0.1373 | 0.0155  | 0.3950 |
-| dictionary write     | 0.0217 | 0.0250  | 0.1177 |
-| float math           | 0.0950 | 0.0140  | 0.1010 |
-| integer math         | 0.0743 | 0.0085  | 0.0397 |
-| collection iterate   | 0.1407 | 0.0310  | 1.0600 |
-| collection write     | 0.0440 | 0.0017  | 0.2260 |
-| string compare       | 0.0100 | 0.0130  | 0.0183 |
+| alloc                | 0.0473 | 2.7775  | 0.0807 |
+| array write          | 0.1373 | 0.0155  | 0.1570 |
+| dictionary write     | 0.0217 | 0.0250  | 0.0370 |
+| float math           | 0.0950 | 0.0140  | 0.0983 |
+| integer math         | 0.0743 | 0.0085  | 0.0283 |
+| collection iterate   | 0.1407 | 0.0310  | 0.0977 |
+| collection write     | 0.0440 | 0.0017  | 0.0860 |
+| string compare       | 0.0100 | 0.0130  | 0.0127 |
 | hanoi @ blocks: 8   |  0.00000000 | 0.00000147  | 0.0000 |
-| 16                   | 0.0010     | 0.0003 | 0.0030 |
+| 16                   | 0.0010     | 0.0003 | 0.0027 |
 | 20                   | ut     | ut | ut |
 | 21                   | ut     | ut | ut |
 | 22                   | ut     | ut | ut |
-| 24                   | 0.3933 | 0.0671  | 0.8800 |
+| 24                   | 0.3933 | 0.0671  | 0.6760 |
 
 Notes:
 
 1. Zig v0.14.0
-2. rete/nsl: rete master `ccf59a60` (2026-10-11), host image VM (`oevm_img`, posix backend) built `gcc -O2`, no
+2. rete/nsl: rete master `5e1d6d45` (2026-10-12), host image VM (`oevm_img`, posix backend) built `gcc -O2`, no
    profiler; mean of three runs. It times in whole milliseconds, so hanoi 8 reads 0.
 
 ## Platform: 166MMX Pentium, 40MB RAM, Windows/95 OSR2
