@@ -50,10 +50,10 @@ hand-written C *dropped straight into the vtable*, with **callers, interpreter, 
 `.oimg` image format all unchanged** (no JIT, no recompile, no format break). Same board,
 same binary, A/B:
 
-| Hanoi n | interpreted (`tuvm/nsl`) | native-in-vtable | speedup |
-| --: | --: | --: | --: |
-| 16 | 0.7 s   | 0.0067 s | **~116×** |
-| 20 | 12.0 s  | 0.103 s  | **~119×** |
+| Hanoi n | Toit | uLisp | CircuitPython | rete interpreted | rete native-in-vtable | native speedup |
+| --: | --: | --: | --: | --: | --: | --: |
+| 16 | 0.2 | 3.2 | 1.4 | 0.7 | 0.0067 | **~116×** |
+| 20 | 3.0 | 54.2 | 21.6 | 12.0 | 0.103 | **~119×** |
 
 ~11.75 µs/move → ~0.10 µs/move; native is linear and allocation-free (no GC). This is the
 *fully-inlined* AOT **ceiling** (the recursion collapses to raw C), so it sits ~10× past
@@ -68,30 +68,30 @@ surgical bespoke-AOT patch for just those. Method + caveats: rete's design recor
 
 STIC, plus Richards and DeltaBlue from this repo, on one board (ESP32-C6 devkit) in one session, 2026-10-12.
 
-| Test | rete/nsl | Toit | MicroPython |
+| Test | Toit | MicroPython | rete/nsl |
 | --: | --: | --: | --: |
-| alloc | 10.9 | 28.0 | 13.2 |
-| array write | 18.0 | 25.9 | 41.5 |
-| dictionary write | 5.3 | 5.5 | 1.0 |
-| float math | 23.3 | 78.7 | 49.0 |
-| integer math | 3.6 | 13.8 | 17.6 |
-| collection iterate | 10.9 | 17.1 | 35.3 |
-| collection write | 11.8 | 12.1 | 6.4 |
-| string compare | 2.2 | 1.9 | 4.0 |
-| Richards (ms per run) | 5,080 | 1,178 | 7,471 |
-| DeltaBlue (ms per run) | 336 | 77 | 326–359 |
+| alloc | 28.0 | 13.2 | 10.9 |
+| array write | 25.9 | 41.5 | 18.0 |
+| dictionary write | 5.5 | 1.0 | 5.3 |
+| float math | 78.7 | 49.0 | 23.3 |
+| integer math | 13.8 | 17.6 | 3.6 |
+| collection iterate | 17.1 | 35.3 | 10.9 |
+| collection write | 12.1 | 6.4 | 11.8 |
+| string compare | 1.9 | 4.0 | 2.2 |
+| Richards (ms per run) | 1,178 | 7,471 | 5,080 |
+| DeltaBlue (ms per run) | 77 | 326–359 | 336 |
 
 Notes:
 
 1. Smaller numbers are better; seconds unless marked. All three VMs print `verified: true` for Richards and DeltaBlue.
 2. Software:
-   - rete/nsl: rete `e2fa47e` (2026-10-12), Zephyr 4.2.0, Model B, 128 KB VM heap, no radio, the interpreter's
-     hot path in SRAM. STIC once per boot, three boots, identical to the millisecond; Richards and DeltaBlue three
-     runs in one boot.
    - Toit v2.0.0-alpha.194, the benchmark installed as a boot container on the `firmware-esp32c6` envelope.
      Mean of three in-process runs.
    - MicroPython v1.29.0 (`ESP32_GENERIC_C6-20260824`), the `.py` sources here with `time.monotonic()` replaced by
      `time.ticks_ms()/1000`. Mean of three in-process runs.
+   - rete/nsl: rete `e2fa47e` (2026-10-12), Zephyr 4.2.0, Model B, 128 KB VM heap, no radio, the interpreter's
+     hot path in SRAM. STIC once per boot, three boots, identical to the millisecond; Richards and DeltaBlue three
+     runs in one boot.
 3. The send-heavy, object-heavy pair is where Toit's compiled code leads: about 4.3× on Richards and 4.4× on
    DeltaBlue. rete/nsl is ahead of MicroPython on Richards and level on DeltaBlue.
 
@@ -104,21 +104,21 @@ from its SOMns sources to nsl as `awfy.nsl` in this repo (MIT; the notice is in 
 computed once with `asFloat` (Soup reads `1.5` as an exact Fraction), Json's substring read, and `==`/`notNil` added
 to a copy of Soup's kernel. Both are interpreters, on an Intel i7-6700 at 3.4 GHz, gcc 16.2.1, 2026-10-12.
 
-| Benchmark | rete/nsl (ms) | Primordial Soup (ms) | nsl ÷ Soup |
+| Benchmark | Primordial Soup (ms) | rete/nsl (ms) | nsl ÷ Soup |
 | --: | --: | --: | --: |
-| List | 238 | 89 | 2.67 |
-| Storage | 391 | 237 | 1.65 |
-| Towers | 217 | 158 | 1.37 |
-| Json | 212 | 160 | 1.32 |
-| DeltaBlue | 106 | 84 | 1.26 |
-| Permute | 288 | 237 | 1.22 |
-| Queens | 262 | 257 | 1.02 |
-| Sieve | 166 | 179 | 0.93 |
-| NBody | 2331 | 2574 | 0.91 |
-| Richards | 244 | 334 | 0.73 |
-| Mandelbrot | 1024 | 1574 | 0.65 |
-| Bounce | 184 | 313 | 0.59 |
-| CD | 120 | 322 | 0.37 |
+| List | 89 | 238 | 2.67 |
+| Storage | 237 | 391 | 1.65 |
+| Towers | 158 | 217 | 1.37 |
+| Json | 160 | 212 | 1.32 |
+| DeltaBlue | 84 | 106 | 1.26 |
+| Permute | 237 | 288 | 1.22 |
+| Queens | 257 | 262 | 1.02 |
+| Sieve | 179 | 166 | 0.93 |
+| NBody | 2574 | 2331 | 0.91 |
+| Richards | 334 | 244 | 0.73 |
+| Mandelbrot | 1574 | 1024 | 0.65 |
+| Bounce | 313 | 184 | 0.59 |
+| CD | 322 | 120 | 0.37 |
 | **geomean** | | | **1.01** |
 
 Notes:
@@ -133,26 +133,28 @@ Notes:
 
 ## Platform: Intel i3-12100, 3.3GHz, 16GB RAM, Ubuntu 24.04
 
-| Test                 | Toit   | Zig     |
-| -------------------: | -----: | ------: |
-| alloc                | 0.0473 | 2.7775  |
-| array write          | 0.1373 | 0.0155  |
-| dictionary write     | 0.0217 | 0.0250  |
-| float math           | 0.0950 | 0.0140  |
-| integer math         | 0.0743 | 0.0085  |
-| collection iterate   | 0.1407 | 0.0310  |
-| collection write     | 0.0440 | 0.0017  |
-| string compare       | 0.0100 | 0.0130  |
-| hanoi @ blocks: 8   |  0.00000000 | 0.00000147  |
-| 16                   | 0.0010     | 0.0003 |
-| 20                   | ut     | ut |
-| 21                   | ut     | ut |
-| 22                   | ut     | ut |
-| 24                   | 0.3933 | 0.0671  |
+| Test                 | Toit   | Zig     | rete/nsl |
+| -------------------: | -----: | ------: | -------: |
+| alloc                | 0.0473 | 2.7775  | 0.1080 |
+| array write          | 0.1373 | 0.0155  | 0.3950 |
+| dictionary write     | 0.0217 | 0.0250  | 0.1177 |
+| float math           | 0.0950 | 0.0140  | 0.1010 |
+| integer math         | 0.0743 | 0.0085  | 0.0397 |
+| collection iterate   | 0.1407 | 0.0310  | 1.0600 |
+| collection write     | 0.0440 | 0.0017  | 0.2260 |
+| string compare       | 0.0100 | 0.0130  | 0.0183 |
+| hanoi @ blocks: 8   |  0.00000000 | 0.00000147  | 0.0000 |
+| 16                   | 0.0010     | 0.0003 | 0.0030 |
+| 20                   | ut     | ut | ut |
+| 21                   | ut     | ut | ut |
+| 22                   | ut     | ut | ut |
+| 24                   | 0.3933 | 0.0671  | 0.8800 |
 
 Notes:
 
 1. Zig v0.14.0
+2. rete/nsl: rete master `ccf59a60` (2026-10-11), host image VM (`oevm_img`, posix backend) built `gcc -O2`, no
+   profiler; mean of three runs. It times in whole milliseconds, so hanoi 8 reads 0.
 
 ## Platform: 166MMX Pentium, 40MB RAM, Windows/95 OSR2
 
