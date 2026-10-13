@@ -133,28 +133,32 @@ Notes:
 
 ## Platform: Intel i3-12100, 3.3GHz, 16GB RAM, Ubuntu 24.04
 
-| Test                 | Toit   | Zig     | rete/nsl |
-| -------------------: | -----: | ------: | -------: |
-| alloc                | 0.0473 | 2.7775  | 0.0807 |
-| array write          | 0.1373 | 0.0155  | 0.1570 |
-| dictionary write     | 0.0217 | 0.0250  | 0.0370 |
-| float math           | 0.0950 | 0.0140  | 0.0983 |
-| integer math         | 0.0743 | 0.0085  | 0.0283 |
-| collection iterate   | 0.1407 | 0.0310  | 0.0977 |
-| collection write     | 0.0440 | 0.0017  | 0.0860 |
-| string compare       | 0.0100 | 0.0130  | 0.0127 |
-| hanoi @ blocks: 8   |  0.00000000 | 0.00000147  | 0.0000 |
-| 16                   | 0.0010     | 0.0003 | 0.0027 |
-| 20                   | ut     | ut | ut |
-| 21                   | ut     | ut | ut |
-| 22                   | ut     | ut | ut |
-| 24                   | 0.3933 | 0.0671  | 0.6760 |
+| Test                 | Toit   | Zig     | Primordial Soup | rete/nsl |
+| -------------------: | -----: | ------: | --------------: | -------: |
+| alloc                | 0.0473 | 2.7775  | 0.0407 | 0.0807 |
+| array write          | 0.1373 | 0.0155  | 0.0860 | 0.1570 |
+| dictionary write     | 0.0217 | 0.0250  | 0.0660 | 0.0370 |
+| float math           | 0.0950 | 0.0140  | 0.1090 | 0.0983 |
+| integer math         | 0.0743 | 0.0085  | 0.0663 | 0.0283 |
+| collection iterate   | 0.1407 | 0.0310  | 0.5723 | 0.0977 |
+| collection write     | 0.0440 | 0.0017  | 0.0910 | 0.0860 |
+| string compare       | 0.0100 | 0.0130  | 0.0090 | 0.0127 |
+| hanoi @ blocks: 8   |  0.00000000 | 0.00000147  | 0.0000 | 0.0000 |
+| 16                   | 0.0010     | 0.0003 | 0.0017 | 0.0027 |
+| 20                   | ut     | ut | ut | ut |
+| 21                   | ut     | ut | ut | ut |
+| 22                   | ut     | ut | ut | ut |
+| 24                   | 0.3933 | 0.0671  | 0.4240 | 0.6760 |
 
 Notes:
 
 1. Zig v0.14.0
 2. rete/nsl: rete master `5e1d6d45` (2026-10-12), host image VM (`oevm_img`, posix backend) built `gcc -O2`, no
-   profiler; mean of three runs. It times in whole milliseconds, so hanoi 8 reads 0.
+   profiler; `performance-host.nsl`, mean of three runs. It times in whole milliseconds, so hanoi 8 reads 0.
+3. Primordial Soup `9ac43be` (ReleaseHost), running `performance-host.nsl` through `performance-soup.py`, which makes
+   four substitutions: the clock (`platform time Stopwatch`), `platform collections Map`/`List` for
+   `Dictionary`/`OrderedCollection`, and `asFloat` on float literals (Soup reads `87.0` as a Fraction), all outside
+   the timed loops. Mean of three runs.
 
 ## Platform: 166MMX Pentium, 40MB RAM, Windows/95 OSR2
 
