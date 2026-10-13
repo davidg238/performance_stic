@@ -8,22 +8,22 @@ See also the [original post](https://ekorau.com/some-numbers/).
 
 STIC benchmark
 
-| Test | Toit | uLisp  | CircuitPython | tuvm/nsl (2026-07) | rete/nsl (2026-10) |
-| --: | --: | --: | --: | --: | --: |
-| alloc | 16.0 | 21.6 | 11.4 | 24.1 | 19.3 |
-| array write | 19.4 | 98.1 | 63.3 | 138.9 | 93.8 |
-| dictionary write | 5.7 | 1.4 | 0.9 | 43.3 | 25.5 |
-| float math | 41.1 | 124.3 | 20.9 | 35.1 | 44.2⁴ |
-| integer math | 9.4 | 122.5 | 14.4 | 15.3 | 5.3 |
-| collection iterate | 12.7 | 42.5 | 29.2 | 532.6 | **22.2** |
-| collection write | 9.5 | 6.7 | 15.4 | 97.0 | 50.6 |
-| string compare | 1.5 | 12.5 | 2.9 | 5.2 | 4.2 |
-| hanoi @ blocks:  8 | 0.0000 | 0.01 | 0.01 | 0.003 | 0.003 |
-| 16 | 0.2 | 3.2 | 1.4 | 0.7 | ut |
-|   20 | 3.0 | 54.2 | 21.6 | 12.0 | ut |
-|  21 | ut | ut | 43.1 | 24.0 | ut |
-|  22 | ut | ut | se | ut | ut |
-| 24 | 49.2 | 924.1 | se | 191.7 | ut |
+| Test | Toit | uLisp  | CircuitPython | rete/nsl (2026-10-12) |
+| --: | --: | --: | --: | --: |
+| alloc | 16.0 | 21.6 | 11.4 | 25.2⁵ |
+| array write | 19.4 | 98.1 | 63.3 | 21.8 |
+| dictionary write | 5.7 | 1.4 | 0.9 | 6.4 |
+| float math | 41.1 | 124.3 | 20.9 | 38.9⁴ |
+| integer math | 9.4 | 122.5 | 14.4 | 2.8 |
+| collection iterate | 12.7 | 42.5 | 29.2 | 17.3 |
+| collection write | 9.5 | 6.7 | 15.4 | 14.5 |
+| string compare | 1.5 | 12.5 | 2.9 | 2.5 |
+| hanoi @ blocks:  8 | 0.0000 | 0.01 | 0.01 | 0.002 |
+| 16 | 0.2 | 3.2 | 1.4 | ut |
+|   20 | 3.0 | 54.2 | 21.6 | ut |
+|  21 | ut | ut | 43.1 | ut |
+|  22 | ut | ut | se | ut |
+| 24 | 49.2 | 924.1 | se | ut |
 
 Notes:  
 
@@ -33,18 +33,17 @@ Notes:
    - Toit v2.0.0-alpha.180
    - uLisp v4.7
    - Adafruit CircuitPython 9.2.7
-   - nsl-tuvm is experimental software, running on Zephyr 4.2.0, with 96 KB VM heap
-   - rete/nsl (2026-10) is the same VM three months on (renamed tuvm → rete), rete master `7e3c4e5`
-     (2026-10-11), Zephyr 4.2.0, Model B, 96 KB VM heap, no WiFi, on the same ESP32-D0WDQ6 rev 1.0 (WROOM-32).
-     Its collection iterate is the first to inline a literal `do:` block at the call site behind a class
-     guard (rete#37). Hanoi above 8 was not part of this run.
-4. Float math (2026-10) ran with a 2 KB boxed-float slab against July's 8 KB: October's image leaves ~3 KB of
-   libc heap where July's left ~28 KB, so July's slab no longer fits. More frequent float collection is the
-   likeliest reason the row is slower than July's; that is not measured.
+   - rete/nsl is experimental software: rete master `38a5500` (2026-10-12), Zephyr 4.2.0, Model B, 96 KB VM
+     heap, no WiFi, on an ESP32-D0WDQ6 rev 1.0 (WROOM-32). Three runs, identical to the millisecond. Hanoi
+     above 8 was not part of this run.
+4. Float math runs with a 2 KB (128-cell) boxed-float slab: the image leaves ~3 KB of libc heap, so a larger
+   slab does not fit.
+5. Alloc is slower than the previous day's run on the same board (19.3 s) and is not yet explained; on the
+   ESP32-C6 the same row got faster over the same changes (below).
 
-### tuvm native-AOT — the OEOM lever
+### native-AOT — the OEOM lever (2026-07)
 
-The `tuvm/nsl` Hanoi rows above are the **interpreter**. Because tuvm's object model
+A July 2026 spike on the same board, with the VM then called tuvm (now rete). Because its object model
 (OEOM) makes every call a `send` and every method just a `Binding → Closure`, "native vs
 interpreted" is **one field** on the closure — so a hot method can be replaced by
 hand-written C *dropped straight into the vtable*, with **callers, interpreter, and
@@ -62,8 +61,75 @@ Toit's compiled column on this workload — a real bytecode→native compiler pr
 send/GC semantics would land between the interpreter and this bound. The point is the
 **lever, not the number**: OEOM's single dispatch choke point lets you ship the
 interpreter, profile real workloads to find the genuinely hot methods, then push a
-surgical bespoke-AOT patch for just those. Method + caveats:
-`~/workspace/tuvm/docs/design/2026-07-17-oeom-native-substitution-hanoi-spike-design.md`.
+surgical bespoke-AOT patch for just those. Method + caveats: rete's design record
+`docs/design/2026-07-17-oeom-native-substitution-hanoi-spike-design.md`.
+
+## Platform: Espressif ESP32-C6, RISC-V, 160 MHz, 512 KB RAM, 8 MB Flash
+
+STIC, plus Richards and DeltaBlue from this repo, on one board (ESP32-C6 devkit) in one session, 2026-10-12.
+
+| Test | rete/nsl | Toit | MicroPython |
+| --: | --: | --: | --: |
+| alloc | 10.9 | 28.0 | 13.2 |
+| array write | 18.0 | 25.9 | 41.5 |
+| dictionary write | 5.3 | 5.5 | 1.0 |
+| float math | 23.3 | 78.7 | 49.0 |
+| integer math | 3.6 | 13.8 | 17.6 |
+| collection iterate | 10.9 | 17.1 | 35.3 |
+| collection write | 11.8 | 12.1 | 6.4 |
+| string compare | 2.2 | 1.9 | 4.0 |
+| Richards (ms per run) | 5,080 | 1,178 | 7,471 |
+| DeltaBlue (ms per run) | 336 | 77 | 326–359 |
+
+Notes:
+
+1. Smaller numbers are better; seconds unless marked. All three VMs print `verified: true` for Richards and DeltaBlue.
+2. Software:
+   - rete/nsl: rete `e2fa47e` (2026-10-12), Zephyr 4.2.0, Model B, 128 KB VM heap, no radio, the interpreter's
+     hot path in SRAM. STIC once per boot, three boots, identical to the millisecond; Richards and DeltaBlue three
+     runs in one boot.
+   - Toit v2.0.0-alpha.194, the benchmark installed as a boot container on the `firmware-esp32c6` envelope.
+     Mean of three in-process runs.
+   - MicroPython v1.29.0 (`ESP32_GENERIC_C6-20260824`), the `.py` sources here with `time.monotonic()` replaced by
+     `time.ticks_ms()/1000`. Mean of three in-process runs.
+3. The send-heavy, object-heavy pair is where Toit's compiled code leads: about 4.3× on Richards and 4.4× on
+   DeltaBlue. rete/nsl is ahead of MicroPython on Richards and level on DeltaBlue.
+
+## Are We Fast Yet: rete/nsl against Primordial Soup (host)
+
+The [Are We Fast Yet](https://github.com/smarr/are-we-fast-yet) suite (Marr, Daloze, Mössenböck, DLS 2016), ported
+from its SOMns sources to nsl as `awfy.nsl` in this repo (MIT; the notice is in the file), against
+[Primordial Soup](https://github.com/newspeaklanguage/primordialsoup), the Newspeak VM, running the same `awfy.nsl`
+(nsl is a subset of Newspeak). Four mechanical substitutions make it compile on Soup: the clock read, float literals
+computed once with `asFloat` (Soup reads `1.5` as an exact Fraction), Json's substring read, and `==`/`notNil` added
+to a copy of Soup's kernel. Both are interpreters, on an Intel i7-6700 at 3.4 GHz, gcc 16.2.1, 2026-10-12.
+
+| Benchmark | rete/nsl (ms) | Primordial Soup (ms) | nsl ÷ Soup |
+| --: | --: | --: | --: |
+| List | 238 | 89 | 2.67 |
+| Storage | 391 | 237 | 1.65 |
+| Towers | 217 | 158 | 1.37 |
+| Json | 212 | 160 | 1.32 |
+| DeltaBlue | 106 | 84 | 1.26 |
+| Permute | 288 | 237 | 1.22 |
+| Queens | 262 | 257 | 1.02 |
+| Sieve | 166 | 179 | 0.93 |
+| NBody | 2331 | 2574 | 0.91 |
+| Richards | 244 | 334 | 0.73 |
+| Mandelbrot | 1024 | 1574 | 0.65 |
+| Bounce | 184 | 313 | 0.59 |
+| CD | 120 | 322 | 0.37 |
+| **geomean** | | | **1.01** |
+
+Notes:
+
+1. Median of three runs each, sequential. rete `13d5e6e`, Primordial Soup `9ac43be` (ReleaseHost).
+2. Inner iteration counts are scaled to host size (Bounce 300, List 100, Permute 200, Storage 200, Richards 5,
+   Queens 200, Sieve 300, Towers 60, NBody 250000, DeltaBlue 2000, Json 20, Mandelbrot 500, CD 10). Havlak is not
+   ported.
+3. `awfy.nsl` here is rete master's copy (2026-10-12): it differs from the run's only in visibility markers
+   (`private`/`public`), which nsl began enforcing the same day.
+4. Soup's lead is in the allocation-heavy rows (List, Storage).
 
 ## Platform: Intel i3-12100, 3.3GHz, 16GB RAM, Ubuntu 24.04
 
