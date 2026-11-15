@@ -122,7 +122,34 @@ Notes:
    faster on Zephyr, cause not yet measured (ztoit #2). Running the program from flash costs 2–11%.
 4. The FreeRTOS column differs from the 2026-10-12 Toit column above (alloc 28.0, float math 78.7): that run was
    v2.0.0-alpha.194.
-5. Toit (Zephyr) also runs on the nRF52840 (Arm Cortex-M4, 64 MHz); STIC has not been run there yet.
+
+### Toit (Zephyr) on three CPUs, 2026-11-14
+
+The same Toit (Zephyr) build of v2.0.0 on three SoCs. Stock Toit runs on ESP32 parts only; the nRF52840 and
+RP2350B columns have no FreeRTOS counterpart.
+
+| Test | ESP32-C6, RISC-V, 160 MHz | RP2350B, Cortex-M33, 150 MHz | nRF52840, Cortex-M4F, 64 MHz |
+| --: | --: | --: | --: |
+| alloc | 9.6 | 9.7 | 31.6 |
+| array write | 26.4 | 22.1 | 87.0 |
+| dictionary write | 4.0 | 7.3 | 12.9 |
+| float math | 31.4 | 32.7 | 91.9 |
+| integer math | 13.7 | 11.8 | 44.6 |
+| collection iterate | 17.7 | 17.5 | 57.7 |
+| collection write | 7.0 | 10.1 | 23.9 |
+| string compare | 2.0 | 1.6 | 6.3 |
+
+Notes:
+
+1. Smaller numbers are better; seconds, mean of three in-process runs. Zephyr 4.2.0, 160 KB Toit heap, no radio.
+2. Hardware and builds:
+   - ESP32-C6 devkit: the XIP column above (ztoit `4eb8c02`).
+   - RP2350B: WeAct Studio RP2350B core board; the program runs from RAM (Zephyr has no flash driver for the
+     RP2350's QSPI controller yet). ztoit `50926f4`.
+   - nRF52840: Nordic nRF52840 dongle; the program runs from flash (XIP). ztoit `50926f4`.
+3. Per MHz the Cortex-M4F is about level with the C6 (2.5× slower clock, 2.9–3.3× the time). The RP2350B is
+   level with the C6 except dictionary write and collection write (1.8×, 1.4×), not yet measured.
+4. Raw output: ztoit `spike/step4/`.
 
 ## Are We Fast Yet: rete/nsl against Primordial Soup (host)
 
