@@ -95,6 +95,35 @@ Notes:
 3. The send-heavy, object-heavy pair is where Toit's compiled code leads: about 4.3× on Richards and 4.4× on
    DeltaBlue. rete/nsl is ahead of MicroPython on Richards and level on DeltaBlue.
 
+### Toit (FreeRTOS) vs Toit (Zephyr), 2026-11-14
+
+The same Toit v2.0.0 VM on the same ESP32-C6 board (160 MHz), same day: stock Toit on ESP-IDF (FreeRTOS), and
+Toit built as a Zephyr application by [ztoit](https://github.com/davidg238/ztoit).
+
+| Test | Toit (FreeRTOS) | Toit (Zephyr), program in RAM | Toit (Zephyr), program in flash (XIP) |
+| --: | --: | --: | --: |
+| alloc | 20.3 | 9.1 | 9.6 |
+| array write | 25.7 | 25.7 | 26.4 |
+| dictionary write | 4.4 | 3.6 | 4.0 |
+| float math | 56.1 | 30.8 | 31.4 |
+| integer math | 13.5 | 13.2 | 13.7 |
+| collection iterate | 17.7 | 17.3 | 17.7 |
+| collection write | 9.2 | 6.7 | 7.0 |
+| string compare | 1.9 | 1.9 | 2.0 |
+
+Notes:
+
+1. Smaller numbers are better; seconds, mean of three in-process runs.
+2. Software:
+   - Toit (FreeRTOS): SDK v2.0.0, `firmware-esp32c6.envelope` (ESP-IDF), `performance.toit` as a boot container.
+   - Toit (Zephyr): ztoit `0d53de1` (RAM) and `4eb8c02` (XIP), Zephyr 4.2.0, Toit fork branch `zephyr-port`,
+     160 KB Toit heap, no radio. Raw output in ztoit's `spike/step1/` and `spike/step2/`.
+3. Interpreter-bound rows match; the allocation-heavy rows (alloc, float math, collection write) are 1.2–2.2×
+   faster on Zephyr, cause not yet measured (ztoit #2). Running the program from flash costs 2–11%.
+4. The FreeRTOS column differs from the 2026-10-12 Toit column above (alloc 28.0, float math 78.7): that run was
+   v2.0.0-alpha.194.
+5. Toit (Zephyr) also runs on the nRF52840 (Arm Cortex-M4, 64 MHz); STIC has not been run there yet.
+
 ## Are We Fast Yet: rete/nsl against Primordial Soup (host)
 
 The [Are We Fast Yet](https://github.com/smarr/are-we-fast-yet) suite (Marr, Daloze, Mössenböck, DLS 2016), ported
